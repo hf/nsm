@@ -12,7 +12,7 @@ type ErrorCode string
 const (
 	ECSuccess          ErrorCode = "Success"
 	ECInvalidArgument  ErrorCode = "InvalidArgument"
-	ECInvalidponse     ErrorCode = "Invalidponse"
+	ECInvalidResponse  ErrorCode = "InvalidResponse"
 	ECReadOnlyIndex    ErrorCode = "ReadOnlyIndex"
 	ECInvalidOperation ErrorCode = "InvalidOperation"
 	ECBufferTooSmall   ErrorCode = "BufferTooSmall"
