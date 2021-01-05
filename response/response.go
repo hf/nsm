@@ -12,7 +12,7 @@ type Digest string
 // An ErrorCode string.
 type ErrorCode string
 
-// Commonly occuring error codes.
+// Commonly ocurring error codes.
 const (
 	ECSuccess          ErrorCode = "Success"
 	ECInvalidArgument  ErrorCode = "InvalidArgument"
@@ -24,7 +24,7 @@ const (
 	ECInternalError    ErrorCode = "InternalError"
 )
 
-// Commonly occuring digest names.
+// Commonly ocurring digest names.
 const (
 	DigestSHA256 Digest = "SHA256"
 	DigestSHA384 Digest = "SHA384"
