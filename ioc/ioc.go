@@ -1,4 +1,4 @@
-// Generates the proper ioctl command numbers.
+// Package ioc generates the proper ioctl command numbers.
 //
 // Based on C sources from Linux kernel:
 // * https://github.com/torvalds/linux/blob/master/include/asm-generic/ioctl.h
@@ -19,17 +19,17 @@ const (
 	cSIZESHIFT uint = (cTYPESHIFT + cTYPEBITS)
 	cDIRSHIFT  uint = (cSIZESHIFT + cSIZEBITS)
 
-	// Direction: None
+	// NONE - No ioctl direction.
 	NONE uint = 0
 
-	// Direction: Write
+	// WRITE - Write ioctl direction.
 	WRITE uint = 1
 
-	// Direction: Read
+	// READ - Read ioctl direction.
 	READ uint = 2
 )
 
-// Generate an ioctl command from the supplied arguments.
+// Command generates an ioctl command from the supplied arguments.
 func Command(dir, typ, nr, size uint) uint {
 	return (((dir) << cDIRSHIFT) |
 		((typ) << cTYPESHIFT) |

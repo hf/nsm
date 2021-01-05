@@ -1,4 +1,4 @@
-// Contains constructs commonly used in the NSM response payload.
+// Package response contains commonly used constructs for NSM responses.
 package response
 
 import (
@@ -6,9 +6,13 @@ import (
 	"github.com/fxamacker/cbor/v2"
 )
 
+// A Digest name.
 type Digest string
+
+// An ErrorCode string.
 type ErrorCode string
 
+// Commonly occuring error codes.
 const (
 	ECSuccess          ErrorCode = "Success"
 	ECInvalidArgument  ErrorCode = "InvalidArgument"
@@ -18,27 +22,35 @@ const (
 	ECBufferTooSmall   ErrorCode = "BufferTooSmall"
 	ECInputTooLarge    ErrorCode = "InputTooLarge"
 	ECInternalError    ErrorCode = "InternalError"
+)
 
+// Commonly occuring digest names.
+const (
 	DigestSHA256 Digest = "SHA256"
 	DigestSHA384 Digest = "SHA384"
 	DigestSHA512 Digest = "SHA512"
 )
 
+// A DescribePCR response.
 type DescribePCR struct {
 	Lock bool   `cbor:"lock" json:"lock,omitempty"`
 	Data []byte `cbor:"data" json:"data,omitempty"`
 }
 
+// An ExtendPCR response.
 type ExtendPCR struct {
 	Data []byte `cbor:"data" json:"data,omitempty"`
 }
 
+// A LockPCR response. Presence on a `Request` confirms PCR has been locked.
 type LockPCR struct {
 }
 
+// A LockPCRs response. Presence on a `Request` confirms PCRs have been locked.
 type LockPCRs struct {
 }
 
+// A DescribeNSM response.
 type DescribeNSM struct {
 	VersionMajor uint16   `cbor:"version_major" json:"version_major,omitempty"`
 	VersionMinor uint16   `cbor:"version_minor" json:"version_minor,omitempty"`
@@ -49,14 +61,18 @@ type DescribeNSM struct {
 	Digest       Digest   `cbor:"digest" json:"digest,omitempty"`
 }
 
+// An Attestation response.
 type Attestation struct {
 	Document []byte `cbor:"document" json:"document,omitempty"`
 }
 
+// A GetRandom response.
 type GetRandom struct {
 	Random []byte `cbor:"random" json:"random,omitempty"`
 }
 
+// A Response structure. One and only one field is set at any time. Always
+// check the Error field first.
 type Response struct {
 	DescribePCR *DescribePCR `json:"DescribePCR,omitempty"`
 	ExtendPCR   *ExtendPCR   `json:"ExtendPCR,omitempty"`
@@ -79,6 +95,8 @@ type mapResponse struct {
 	Error ErrorCode `cbor:"Error"`
 }
 
+// UnmarshalCBOR function to correctly unmarshal the CBOR encoding according to
+// Rust's cbor serde implementation.
 func (res *Response) UnmarshalCBOR(data []byte) error {
 	// One might try to question the sanity behind this decoding function.
 	// Please enjoy this: https://github.com/pyfisch/cbor/blob/2f2d0253e2d30e5ba7812cf0b149838b0c95530d/src/ser.rs#L83-L117

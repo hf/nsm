@@ -80,8 +80,7 @@ func generateBigPrime() (*big.Int, error) {
 
 ### Obtaining an Attestation Document
 
-Here's an example of how you can get an [attestation
-document][aws-nitro-attesttaion] document:
+Here's an example of how you can get an [attestation-document][aws-nitro-attesttaion] document:
 
 ```go
 import (

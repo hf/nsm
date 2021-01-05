@@ -1,4 +1,4 @@
-// Implements the Nitro Security module interface in Go.
+// Package nsm implements the Nitro Security Module interface.
 package nsm
 
 import (
@@ -21,7 +21,8 @@ const (
 	ioctlMagic      = 0x0A
 )
 
-// A generic file descriptor interface that can be closed. os.File conforms to this interface.
+// FileDescriptor is a generic file descriptor interface that can be closed.
+// os.File conforms to this interface.
 type FileDescriptor interface {
 	// Provide the uintptr for the file descriptor.
 	Fd() uintptr
@@ -35,12 +36,12 @@ type Options struct {
 	// A function that opens the NSM device file `/dev/nsm`.
 	Open func() (FileDescriptor, error)
 
-	// A function that implements the syscall.Syscall interface and is able to work with the
-	// file descriptor returned from `Open` as the `a1` argument.
+	// A function that implements the syscall.Syscall interface and is able to
+	// work with the file descriptor returned from `Open` as the `a1` argument.
 	Syscall func(trap, a1, a2, a3 uintptr) (r1, r2 uintptr, err syscall.Errno)
 }
 
-// Use these options to open a default NSM session to /dev/nsm.
+// DefaultOptions can be used to open the default NSM session on `/dev/nsm`.
 var DefaultOptions = Options{
 	Open: func() (FileDescriptor, error) {
 		return os.Open("/dev/nsm")
@@ -48,7 +49,7 @@ var DefaultOptions = Options{
 	Syscall: syscall.Syscall,
 }
 
-// An NSM session. Thread safe except when closing.
+// A Session is used to interact with the NSM.
 type Session struct {
 	fd      FileDescriptor
 	options Options
@@ -87,7 +88,7 @@ func send(options Options, fd uintptr, req []byte, res []byte) ([]byte, error) {
 	return res[:msg.Response.Len], nil
 }
 
-// Open a new session with the provided options.
+// OpenSession opens a new session with the provided options.
 func OpenSession(opts Options) (Session, error) {
 	session := Session{
 		options: opts,
@@ -113,13 +114,13 @@ func OpenSession(opts Options) (Session, error) {
 	return session, nil
 }
 
-// Open a new session with the default options.
+// OpenDefaultSession opens a new session with the default options.
 func OpenDefaultSession() (Session, error) {
 	return OpenSession(DefaultOptions)
 }
 
-// Close this session. It is not thread safe to Close while other threads are Read-ing or
-// Send-ing.
+// Close this session. It is not thread safe to Close while other threads are
+// Read-ing or Send-ing.
 func (sess *Session) Close() error {
 	if nil == sess.fd {
 		return errors.New("Session is closed")
@@ -133,10 +134,10 @@ func (sess *Session) Close() error {
 	return err
 }
 
-// Send an NSM request to the device and await its response. It safe to call this from
-// multiple threads that are Read-ing or Send-ing, but not Close-ing.
-// Each Send and Read call reserves at most 16KB of memory, so having multiple parallel sends or reads
-// might lead to increased memory usage.
+// Send an NSM request to the device and await its response. It safe to call
+// this from multiple threads that are Read-ing or Send-ing, but not Close-ing.
+// Each Send and Read call reserves at most 16KB of memory, so having multiple
+// parallel sends or reads might lead to increased memory usage.
 func (sess *Session) Send(req request.Request) (response.Response, error) {
 	reqb := sess.reqpool.Get().(*bytes.Buffer)
 	defer sess.reqpool.Put(reqb)
@@ -174,12 +175,12 @@ func (sess *Session) sendMarshaled(reqb *bytes.Buffer, resb []byte) (response.Re
 	return res, nil
 }
 
-// Read entropy from the NSM device. It is safe to call this from multiple threads that are
-// Read-ing or Send-ing, but not Close-ing.
-// This method will always attempt to fill the whole slice with entropy thus blocking until
-// that occurs. If reading fails, it is probably an irrecoverable error.
-// Each Send and Read call reserves at most 16KB of memory, so having multiple parallel sends or reads
-// might lead to increased memory usage.
+// Read entropy from the NSM device. It is safe to call this from multiple
+// threads that are Read-ing or Send-ing, but not Close-ing.  This method will
+// always attempt to fill the whole slice with entropy thus blocking until that
+// occurs. If reading fails, it is probably an irrecoverable error.  Each Send
+// and Read call reserves at most 16KB of memory, so having multiple parallel
+// sends or reads might lead to increased memory usage.
 func (sess *Session) Read(into []byte) (int, error) {
 	reqb := sess.reqpool.Get().(*bytes.Buffer)
 	defer sess.reqpool.Put(reqb)
