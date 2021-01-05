@@ -1,5 +1,7 @@
 # Nitro Security Module Interface for Go
 
+[![Go Report Card][go-reportcard-badge]][go-reportcard]
+
 This is an implementation of the [AWS Nitro Security Module][nsm] interface for
 Go. Nitro Enclaves only support Linux OSs on X86 or X64, so this package is not
 intended to be used on other OSs or architectures.
@@ -129,6 +131,9 @@ reproducible builds without relying on `cgo`.
 
 Copyright &copy; 2021 Stojan Dimitrovski. Licensed under the MIT License. See
 `LICENSE` for more information.
+
+[go-reportcard-badge]: https://goreportcard.com/badge/github.com/hf/nsm
+[go-reportcard]: https://goreportcard.com/report/github.com/hf/nsm
 
 [nsm]: https://github.com/aws/aws-nitro-enclaves-nsm-api
 [aws-nitro-attestation]: https://docs.aws.amazon.com/enclaves/latest/user/set-up-attestation.html
