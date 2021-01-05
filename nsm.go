@@ -1,6 +1,4 @@
 // Implements the Nitro Security module interface in Go.
-//
-//
 package nsm
 
 import (
