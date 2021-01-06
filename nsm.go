@@ -49,6 +49,39 @@ var DefaultOptions = Options{
 	Syscall: syscall.Syscall,
 }
 
+// ErrorIoctlFailed is an error returned when the underlying ioctl syscall has
+// failed.
+type ErrorIoctlFailed struct {
+	// Errno is the errno returned by the syscall.
+	Errno syscall.Errno
+}
+
+// Error returns the formatted string.
+func (err *ErrorIoctlFailed) Error() string {
+	return fmt.Sprintf("ioctl failed on device with errno %v", err.Errno)
+}
+
+// ErrorGetRandomFailed is an error returned when the GetRandom request as part
+// of a `Read` has failed with an error code, is invalid or did not return any
+// random bytes.
+type ErrorGetRandomFailed struct {
+	ErrorCode response.ErrorCode
+}
+
+// Error returns the formatted string.
+func (err *ErrorGetRandomFailed) Error() string {
+	if "" != err.ErrorCode {
+		return fmt.Sprintf("GetRandom failed with error code %v", err.ErrorCode)
+	}
+
+	return "GetRandom response did not include random bytes"
+}
+
+var (
+	// ErrSessionClosed is returned when the session is in a closed state.
+	ErrSessionClosed error = errors.New("Session is closed")
+)
+
 // A Session is used to interact with the NSM.
 type Session struct {
 	fd      FileDescriptor
@@ -82,7 +115,9 @@ func send(options Options, fd uintptr, req []byte, res []byte) ([]byte, error) {
 	)
 
 	if 0 != err {
-		return nil, fmt.Errorf("ioctl failed %v", err)
+		return nil, &ErrorIoctlFailed{
+			Errno: err,
+		}
 	}
 
 	return res[:msg.Response.Len], nil
@@ -92,16 +127,6 @@ func send(options Options, fd uintptr, req []byte, res []byte) ([]byte, error) {
 func OpenSession(opts Options) (Session, error) {
 	session := Session{
 		options: opts,
-		reqpool: &sync.Pool{
-			New: func() interface{} {
-				return bytes.NewBuffer(make([]byte, 0, maxRequestSize))
-			},
-		},
-		respool: &sync.Pool{
-			New: func() interface{} {
-				return make([]byte, maxResponseSize)
-			},
-		},
 	}
 
 	fd, err := opts.Open()
@@ -110,6 +135,16 @@ func OpenSession(opts Options) (Session, error) {
 	}
 
 	session.fd = fd
+	session.reqpool = &sync.Pool{
+		New: func() interface{} {
+			return bytes.NewBuffer(make([]byte, 0, maxRequestSize))
+		},
+	}
+	session.respool = &sync.Pool{
+		New: func() interface{} {
+			return make([]byte, maxResponseSize)
+		},
+	}
 
 	return session, nil
 }
@@ -123,7 +158,7 @@ func OpenDefaultSession() (Session, error) {
 // Read-ing or Send-ing.
 func (sess *Session) Close() error {
 	if nil == sess.fd {
-		return errors.New("Session is closed")
+		return nil
 	}
 
 	err := sess.fd.Close()
@@ -204,12 +239,10 @@ func (sess *Session) Read(into []byte) (int, error) {
 			return i, err
 		}
 
-		if nil == res.GetRandom {
-			return i, errors.New("NSM did not return GetRandom response")
-		}
-
-		if nil == res.GetRandom.Random || 0 == len(res.GetRandom.Random) {
-			return i, errors.New("NSM did not return random data in response")
+		if "" != res.Error || nil == res.GetRandom || nil == res.GetRandom.Random || 0 == len(res.GetRandom.Random) {
+			return i, &ErrorGetRandomFailed{
+				ErrorCode: res.Error,
+			}
 		}
 
 		i += copy(into[i:], res.GetRandom.Random)
