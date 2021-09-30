@@ -110,7 +110,7 @@ func attest(nonce, userData, publicKey []byte) ([]byte, error) {
     }
 
     if "" != res.Error {
-        return nil, errors.New(res.Error)
+        return nil, errors.New(string(res.Error))
     }
 
     if nil == res.Attestation || nil == res.Attestation.Document {
