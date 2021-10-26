@@ -103,14 +103,14 @@ func attest(nonce, userData, publicKey []byte) ([]byte, error) {
     res, err := sess.Send(&request.Attestation{
         Nonce: nonce,
         UserData: userData,
-        Value: publicKey,
+        PublicKey: publicKey,
     })
     if nil != err {
         return nil, err
     }
 
     if "" != res.Error {
-        return nil, errors.New(res.Error)
+        return nil, errors.New(string(res.Error))
     }
 
     if nil == res.Attestation || nil == res.Attestation.Document {
