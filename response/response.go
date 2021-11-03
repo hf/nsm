@@ -116,14 +116,19 @@ func (res *Response) UnmarshalCBOR(data []byte) error {
 		res.Attestation = possiblyMap.Attestation
 		res.GetRandom = possiblyMap.GetRandom
 		res.Error = possiblyMap.Error
+
+		return nil
 	}
 
-	if "LockPCR" == possiblyString {
+	switch possiblyString {
+	case "LockPCR":
 		res.LockPCR = &LockPCR{}
-	} else if "LockPCRs" == possiblyString {
+
+	case "LockPCRs":
 		res.LockPCRs = &LockPCRs{}
-	} else {
-		return fmt.Errorf("Unknown response string-like value %v", possiblyString)
+
+	default:
+		return fmt.Errorf("Unknown NSM response with string-like value %q", possiblyString)
 	}
 
 	return nil
