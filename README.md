@@ -121,6 +121,8 @@ func attest(nonce, userData, publicKey []byte) ([]byte, error) {
 }
 ```
 
+There's a full example in `example/attestation`.
+
 ## Reference Implementation
 
 This implementation is based on the [Nitro Enclaves SDK][nitro-enclaves-sdk]
