@@ -124,8 +124,8 @@ func send(options Options, fd uintptr, req []byte, res []byte) ([]byte, error) {
 }
 
 // OpenSession opens a new session with the provided options.
-func OpenSession(opts Options) (Session, error) {
-	session := Session{
+func OpenSession(opts Options) (*Session, error) {
+	session := &Session{
 		options: opts,
 	}
 
@@ -150,7 +150,7 @@ func OpenSession(opts Options) (Session, error) {
 }
 
 // OpenDefaultSession opens a new session with the default options.
-func OpenDefaultSession() (Session, error) {
+func OpenDefaultSession() (*Session, error) {
 	return OpenSession(DefaultOptions)
 }
 
