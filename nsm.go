@@ -5,14 +5,15 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/fxamacker/cbor/v2"
-	"github.com/hf/nsm/ioc"
-	"github.com/hf/nsm/request"
-	"github.com/hf/nsm/response"
 	"os"
 	"sync"
 	"syscall"
 	"unsafe"
+
+	"github.com/fxamacker/cbor/v2"
+	"github.com/hf/nsm/ioc"
+	"github.com/hf/nsm/request"
+	"github.com/hf/nsm/response"
 )
 
 const (
@@ -96,15 +97,19 @@ type ioctlMessage struct {
 }
 
 func send(options Options, fd uintptr, req []byte, res []byte) ([]byte, error) {
+	iovecReq := syscall.Iovec{
+		Base: &req[0],
+	}
+	iovecReq.SetLen(len(req))
+
+	iovecRes := syscall.Iovec{
+		Base: &res[0],
+	}
+	iovecRes.SetLen(len(res))
+
 	msg := ioctlMessage{
-		Request: syscall.Iovec{
-			Base: &req[0],
-			Len:  uint64(len(req)),
-		},
-		Response: syscall.Iovec{
-			Base: &res[0],
-			Len:  uint64(len(res)),
-		},
+		Request:  iovecReq,
+		Response: iovecRes,
 	}
 
 	_, _, err := options.Syscall(
